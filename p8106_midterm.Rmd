@@ -5,6 +5,8 @@ date: "2025-03-28"
 output:
   pdf_document: default
   html_document: default
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include = FALSE}
@@ -13,12 +15,117 @@ knitr::opts_chunk$set(fig.width = 10,
                       out.width = "90%",
                       message = FALSE,
                       warning = FALSE)
+set.seed(37)
+
+library(tidyverse)
+library(dplyr)
+library(forcats)
 ```
 
 ### Load data
 
 ```{r load_data}
-train_data = load("data/dat1.RData")
-test_data = load("data/dat2.RData")
+load("data/dat1.RData")
+train_data = dat1 |>
+  janitor::clean_names() |>
+  mutate(
+    gender = as.factor(gender),
+    diabetes = as.factor(diabetes),
+    hypertension = as.factor(hypertension),
+    race = fct_recode(race,
+                  White = "1",
+                  Asian = "2",
+                  Black = "3",
+                  Hispanic = "4"),
+    gender = fct_recode(gender,
+                        Male = "1",
+                        Female = "0"),
+    smoking = fct_recode(smoking,
+                         "Never smoked" = "0",
+                         "Former smoker" = "1",
+                         "Current smoker" = "2"))
+
+load("data/dat2.RData")
+test_data = dat2 |>
+  janitor::clean_names() |>
+  mutate(
+    gender = as.factor(gender),
+    diabetes = as.factor(diabetes),
+    hypertension = as.factor(hypertension),
+    race = fct_recode(race,
+                  White = "1",
+                  Asian = "2",
+                  Black = "3",
+                  Hispanic = "4"),
+    gender = fct_recode(gender,
+                        Male = "1",
+                        Female = "0"),
+    smoking = fct_recode(smoking,
+                         "Never smoked" = "0",
+                         "Former smoker" = "1",
+                         "Current smoker" = "2")
+  )
 ```
+
+## Descriptive Analysis
+
+### Numeric Variables
+
+```{r}
+train_data |> 
+  pivot_longer(
+    cols = c(age, height, weight, bmi),
+    names_to = "variable",
+    values_to = "value"
+  ) |>
+  ggplot(aes(x = value, y = log_antibody, color = variable)) +
+  geom_point(alpha = 0.5, size = 0.6) +
+  facet_wrap(variable ~ .,  scales = "free") +
+    labs(title = "Distribution of the Demographic Continuous Variables",
+         x = "Variables",
+         y = "Log_Antibody")
+
+train_data |> 
+  pivot_longer(
+    cols = c(sbp, ldl, time),
+    names_to = "variable",
+    values_to = "value"
+  ) |>
+  ggplot(aes(x = value, y = log_antibody, color = variable)) +
+  geom_point(alpha = 0.5, size = 0.6) +
+  facet_wrap(variable ~ .,  scales = "free") +
+    labs(title = "Distribution of the Clinical Continuous Variables",
+         x = "Variables",
+         y = "Log_Antibody")
+```
+
+```{r}
+
+```
+
+
+### Categorical Variables
+
+```{r}
+train_data |> 
+  pivot_longer(
+    cols = c(gender, race, smoking, diabetes, hypertension),
+    names_to = "variable",
+    values_to = "value"
+  ) |>
+  mutate(
+    variable = factor(variable, levels = c("gender", "race", "smoking", "diabetes", "hypertension"))
+  ) |>
+  ggplot(aes(x = value, y = log_antibody, fill = variable)) +
+  geom_boxplot(alpha = 0.5) +
+  facet_wrap(variable ~ .,  scales = "free") +
+    labs(title = "Distribution of the Categorical Variables",
+         x = "Variables",
+         y = "Log_Antibody") +
+  theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
+```
+
+
+
+
 
