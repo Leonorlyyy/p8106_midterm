@@ -66,9 +66,19 @@ test_data = dat2 |>
                          "Current smoker" = "2")
   )
 
-x_train = model.matrix(log_antibody ~ ., train_data[, -1])[, -1]
-y_train = train_data[, "log_antibody"]
 ```
+
+### Modify Data
+
+```{r}
+train_data1 = 
+  train_data %>% 
+  select(-id, -height, -weight, -hypertension)
+
+x_train = model.matrix(log_antibody ~ ., train_data1)[, -1]
+y_train = train_data1[, "log_antibody"]
+```
+
 
 ## Descriptive Analysis
 
