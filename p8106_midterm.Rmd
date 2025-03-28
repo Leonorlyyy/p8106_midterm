@@ -1,0 +1,17 @@
+---
+title: "P8106 Midterm Project"
+author: "Leyang Rui, Jinghan Zhao"
+date: "2025-03-28"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(fig.width = 10, 
+                      fig.height = 5,
+                      out.width = "90%",
+                      message = FALSE,
+                      warning = FALSE)
+```
+
