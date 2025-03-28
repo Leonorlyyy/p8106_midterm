@@ -20,6 +20,13 @@ set.seed(37)
 library(tidyverse)
 library(forcats)
 library(corrplot)
+library(caret)
+library(mgcv)
+library(earth)
+library(rpart)
+library(rpart.plot)
+library(party)
+library(partykit)
 ```
 
 ## Load Data
@@ -175,4 +182,53 @@ corrplot(cor(x_train), method = "circle", type = "full")
 
 ### GAM and MARS
 
+```{r, GAM}
+set.seed(37)
+
+gam.fit = train(x_train, y_train,
+                 method = "gam", 
+                 trControl = ctrl1)
+
+gam.fit$bestTune
+gam.fit$finalModel
+
+plot(gam.fit$finalModel)
+```
+
+```{r, MARS}
+set.seed(37)
+
+mars_grid = expand.grid(degree = 1:3,
+                        nprune = 2:12)
+
+mars.fit = train(x_train, y_train,
+                 method = "earth",
+                 tuneGrid = mars_grid,
+                 trControl = ctrl1)
+
+ggplot(mars.fit)
+
+mars.fit$bestTune
+coef(mars.fit$finalModel)
+```
+
 ### Regression Trees
+
+```{r}
+set.seed(37)
+
+tree_full = rpart(formula = log_antibody ~ ., data = train_data1,
+                  control = rpart.control(cp = 0))
+
+printcp(tree_full)
+cpTable = tree_full$cptable
+plotcp(tree_full)
+
+## Find the cp that yields the minimum cross-validation error
+minErr = which.min(cpTable[,4])
+tree_final = rpart::prune(tree_full, cp = cpTable[minErr, 1])
+rpart.plot(tree_final)
+
+summary(tree_final)
+```
+
