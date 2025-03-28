@@ -220,7 +220,6 @@ set.seed(37)
 tree_full = rpart(formula = log_antibody ~ ., data = train_data1,
                   control = rpart.control(cp = 0))
 
-printcp(tree_full)
 cpTable = tree_full$cptable
 plotcp(tree_full)
 
