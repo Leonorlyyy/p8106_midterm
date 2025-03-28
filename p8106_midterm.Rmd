@@ -86,8 +86,16 @@ train_data1 =
 
 x_train = model.matrix(log_antibody ~ ., train_data1)[, -1]
 colnames(x_train) = make.names(colnames(x_train), unique = TRUE)
-
 y_train = train_data1[, "log_antibody"]
+
+test_data = 
+  test_data %>% 
+  select(-id, -height, -weight, -hypertension)
+
+x_test = model.matrix(log_antibody ~ ., test_data)[, -1]
+colnames(x_test) = make.names(colnames(x_test), unique = TRUE)
+y_test = test_data[, "log_antibody"]
+
 ctrl1 = trainControl(method = "cv", number = 10)
 ```
 
@@ -302,4 +310,27 @@ resamp = resamples(list(elastic_net = enet_fit,
 summary(resamp)
 bwplot(resamp, metric = "RMSE")
 ```
+
+## Model Comparison
+
+```{r}
+predicted_values = predict(mars.fit$finalModel, newdata = x_test)
+
+residuals = y_test - predicted_values
+
+plot(predicted_values, residuals, 
+     xlab = "Fitted Values", ylab = "Residuals",
+     main = "Residuals vs Fitted Values (MARS)",
+     pch = 20, col = "mediumpurple1")
+abline(h = 0, col = "blue", lwd = 2)
+```
+
+```{r}
+plot(y_test, predicted_values,
+     xlab = "Actual Values", ylab = "Predicted Values",
+     main = "Prediction vs Actual (MARS)",
+     pch = 20, col = "orange")
+abline(0, 1, col = "mediumseagreen", lwd = 2)
+```
+
 
