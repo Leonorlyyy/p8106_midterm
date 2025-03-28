@@ -15,3 +15,10 @@ knitr::opts_chunk$set(fig.width = 10,
                       warning = FALSE)
 ```
 
+### Load data
+
+```{r load_data}
+train_data = load("data/dat1.RData")
+test_data = load("data/dat2.RData")
+```
+
