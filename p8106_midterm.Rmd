@@ -10,11 +10,6 @@ editor_options:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(fig.width = 10, 
-                      fig.height = 5,
-                      out.width = "90%",
-                      message = FALSE,
-                      warning = FALSE)
 set.seed(37)
 
 library(tidyverse)
@@ -27,6 +22,13 @@ library(rpart)
 library(rpart.plot)
 library(party)
 library(partykit)
+
+knitr::opts_chunk$set(fig.width = 10, 
+                      fig.height = 5,
+                      out.width = "90%",
+                      message = FALSE,
+                      warning = FALSE)
+theme_set(theme_bw())
 ```
 
 ## Load Data
@@ -77,7 +79,7 @@ test_data = dat2 |>
 
 ### Modify Data
 
-```{r}
+```{r modify_data}
 train_data1 = 
   train_data %>% 
   select(-id, -height, -weight, -hypertension)
@@ -93,7 +95,7 @@ ctrl1 = trainControl(method = "cv", number = 10)
 
 ### Numeric Variables
 
-```{r}
+```{r numeric_plot}
 train_data |> 
   pivot_longer(
     cols = c(age, height, weight, bmi),
@@ -121,7 +123,7 @@ train_data |>
          y = "Log_Antibody")
 ```
 
-```{r}
+```{r numeric_table}
 train_data %>% 
   pivot_longer(
     cols = c(age, height, weight, bmi, sbp, ldl, time, log_antibody),
@@ -145,7 +147,7 @@ train_data %>%
 
 ### Categorical Variables
 
-```{r}
+```{r categorical_plot}
 train_data |> 
   pivot_longer(
     cols = c(gender, race, smoking, diabetes, hypertension),
@@ -167,7 +169,7 @@ train_data |>
 
 ### Correlation Plot
 
-```{r}
+```{r corr_plot}
 corrplot(cor(x_train), method = "circle", type = "full")
 ```
 
@@ -178,7 +180,60 @@ corrplot(cor(x_train), method = "circle", type = "full")
 
 ### Elastic Net
 
-### PCR and PLS
+### Elastic Net
+
+```{r enet_fit}
+set.seed(37)
+enet_fit = train(log_antibody ~ ., 
+                 data = train_data1, 
+                 method = "glmnet", 
+                 tuneGrid = expand.grid(alpha = seq(0, 1, length = 21),
+                                        lambda = exp(seq(-2, -8, length = 100))),
+                 trControl = ctrl1)
+enet_fit$bestTune
+coef(enet_fit$finalModel, enet_fit$bestTune$lambda)
+```
+
+```{r enet_plot}
+mycol = rainbow(25)
+mypar = list(superpose.symbol = list(col = mycol),
+superpose.line = list(col = mycol))
+
+plot(enet_fit, par.settings = mypar, xTrans = log)
+```
+
+### PCR
+
+```{r pcr_fit}
+set.seed(37)
+pcr_fit = train(x_train, y_train,
+                method = "pcr",
+                tuneGrid = data.frame(ncomp = 1:12),
+                trControl = ctrl1,
+                preProcess = c("center", "scale"))
+summary(pcr_fit)
+```
+
+```{r pcr_plot}
+ggplot(pcr_fit, highlight = TRUE)
+```
+
+### PLS
+
+```{r pls_fit}
+set.seed(37)
+pls_fit = train(x_train, y_train,
+                method = "pls", 
+                tuneGrid = data.frame(ncomp = 1:12),
+                trControl = ctrl1,
+                preProcess = c("center", "scale"))
+summary(pls_fit)
+```
+
+```{r pls_plot}
+ggplot(pls_fit, highlight = TRUE)
+```
+
 
 ### GAM and MARS
 
@@ -214,7 +269,7 @@ coef(mars.fit$finalModel)
 
 ### Regression Trees
 
-```{r}
+```{r trees}
 set.seed(37)
 
 tree_full = rpart(formula = log_antibody ~ ., data = train_data1,
@@ -229,5 +284,17 @@ tree_final = rpart::prune(tree_full, cp = cpTable[minErr, 1])
 rpart.plot(tree_final)
 
 summary(tree_final)
+```
+
+
+### Comparison
+
+```{r compare}
+resamp = resamples(list(elastic_net = enet_fit,
+                        pcr = pcr_fit,
+                        pls = pls_fit,
+                        gam = gam.fit,
+                        mars = mars.fit))
+bwplot(resamp, metric = "RMSE")
 ```
 
