@@ -170,7 +170,8 @@ train_data |>
 ### Correlation Plot
 
 ```{r corr_plot}
-corrplot(cor(x_train), method = "circle", type = "full")
+x_corr = model.matrix(log_antibody ~ ., train_data[, -1])[, -1]
+corrplot(cor(x_corr), method = "circle", type = "full")
 ```
 
 
@@ -237,7 +238,7 @@ ggplot(pls_fit, highlight = TRUE)
 
 ### GAM and MARS
 
-```{r, GAM}
+```{r, GAM, fig.width=10, fig.height = 8, fig.align='center', out.width='90%'}
 set.seed(37)
 
 gam.fit = train(x_train, y_train,
@@ -247,7 +248,10 @@ gam.fit = train(x_train, y_train,
 gam.fit$bestTune
 gam.fit$finalModel
 
+par(mfrow = c(3, 2))
 plot(gam.fit$finalModel)
+
+par(mfrow = c(1, 1))
 ```
 
 ```{r, MARS}
