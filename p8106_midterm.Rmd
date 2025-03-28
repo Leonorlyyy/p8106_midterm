@@ -76,9 +76,11 @@ train_data1 =
   select(-id, -height, -weight, -hypertension)
 
 x_train = model.matrix(log_antibody ~ ., train_data1)[, -1]
-y_train = train_data1[, "log_antibody"]
-```
+colnames(x_train) = make.names(colnames(x_train), unique = TRUE)
 
+y_train = train_data1[, "log_antibody"]
+ctrl1 = trainControl(method = "cv", number = 10)
+```
 
 ## Descriptive Analysis
 
