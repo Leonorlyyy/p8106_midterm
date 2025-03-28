@@ -18,11 +18,11 @@ knitr::opts_chunk$set(fig.width = 10,
 set.seed(37)
 
 library(tidyverse)
-library(dplyr)
 library(forcats)
+library(corrplot)
 ```
 
-### Load data
+## Load Data
 
 ```{r load_data}
 load("data/dat1.RData")
@@ -65,6 +65,9 @@ test_data = dat2 |>
                          "Former smoker" = "1",
                          "Current smoker" = "2")
   )
+
+x_train = model.matrix(log_antibody ~ ., train_data[, -1])[, -1]
+y_train = train_data[, "log_antibody"]
 ```
 
 ## Descriptive Analysis
@@ -100,7 +103,24 @@ train_data |>
 ```
 
 ```{r}
-
+train_data %>% 
+  pivot_longer(
+    cols = c(age, height, weight, bmi, sbp, ldl, time, log_antibody),
+    names_to = "variable_name",
+    values_to = "value"
+  ) %>% 
+  group_by(variable_name) %>% 
+  summarize(
+    mean = mean(value),
+    median = median(value),
+    min = min(value),
+    first_quantile = quantile(value, probs = 0.25),
+    third_quantile = quantile(value, probs = 0.75),
+    max = max(value)
+  ) %>% 
+  ungroup() %>% 
+  arrange(desc(variable_name == "log_antibody"), variable_name) %>% 
+  knitr::kable(digits = 3, caption = "Descriptive Statistics")
 ```
 
 
@@ -126,6 +146,21 @@ train_data |>
 ```
 
 
+### Correlation Plot
+
+```{r}
+corrplot(cor(x_train), method = "circle", type = "full")
+```
 
 
 
+## Regression
+
+
+### Elastic Net
+
+### PCR and PLS
+
+### GAM and MARS
+
+### Regression Trees
