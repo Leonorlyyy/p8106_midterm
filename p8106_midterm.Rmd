@@ -299,6 +299,7 @@ resamp = resamples(list(elastic_net = enet_fit,
                         pls = pls_fit,
                         gam = gam.fit,
                         mars = mars.fit))
+summary(resamp)
 bwplot(resamp, metric = "RMSE")
 ```
 
