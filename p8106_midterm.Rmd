@@ -284,23 +284,19 @@ coef(mars.fit$finalModel)
 
 ### Regression Trees
 
-```{r trees, fig.cap="Tuning Parameter Selection (Regression Tree)"}
+```{r regression tree, fig.cap="Tuning Parameter Selection (Regression Tree)", warning=FALSE}
 set.seed(37)
 
-tree_full = rpart(formula = log_antibody ~ ., data = train_data1,
-                  control = rpart.control(cp = 0))
+tree.fit = train(x_train, y_train, 
+                 method = "rpart",
+                 tuneGrid = data.frame(cp = exp(seq(-10, 0, length = 100,))),
+                 trControl = ctrl1)
 
-cpTable = tree_full$cptable
-plotcp(tree_full)
+plot(tree.fit, xTrans = log)
 ```
 
-```{r trees_final, fig.cap="Final Regression Tree Model"}
-## Find the cp that yields the minimum cross-validation error
-minErr = which.min(cpTable[,4])
-tree_final = rpart::prune(tree_full, cp = cpTable[minErr, 1])
-rpart.plot(tree_final)
-
-summary(tree_final)
+```{r, fig.cap="Final Regression Tree Model"}
+rpart.plot(tree.fit$finalModel)
 ```
 
 
@@ -311,7 +307,8 @@ resamp = resamples(list(elastic_net = enet_fit,
                         pcr = pcr_fit,
                         pls = pls_fit,
                         gam = gam.fit,
-                        mars = mars.fit))
+                        mars = mars.fit,
+                        tree = tree.fit))
 summary(resamp)
 bwplot(resamp, metric = "RMSE")
 ```
