@@ -9,7 +9,9 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r setup, include = FALSE}
+## Setup
+
+```{r setup, message = FALSE, warning = FALSE}
 set.seed(37)
 
 library(tidyverse)
@@ -30,6 +32,8 @@ knitr::opts_chunk$set(fig.width = 10,
                       warning = FALSE)
 theme_set(theme_bw())
 ```
+
+\newpage
 
 ## Load Data
 
@@ -77,7 +81,9 @@ test_data = dat2 |>
 
 ```
 
-### Modify Data
+\newpage
+
+## Modify Data
 
 ```{r modify_data}
 train_data1 = 
@@ -98,6 +104,8 @@ y_test = test_data[, "log_antibody"]
 
 ctrl1 = trainControl(method = "cv", number = 10)
 ```
+
+\newpage
 
 ## Descriptive Analysis
 
@@ -156,6 +164,8 @@ train_data %>%
 ```
 
 
+\newpage
+
 ### Categorical Variables
 
 ```{r categorical_plot, fig.cap="Distribution of the Categorical Variables"}
@@ -177,6 +187,7 @@ train_data |>
   theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
 ```
 
+\newpage
 
 ### Correlation Plot
 
@@ -185,6 +196,7 @@ x_corr = model.matrix(log_antibody ~ ., train_data[, -1])[, -1]
 corrplot(cor(x_corr), method = "circle", type = "full")
 ```
 
+\newpage
 
 
 ## Regression
@@ -212,6 +224,8 @@ superpose.line = list(col = mycol))
 plot(enet_fit, par.settings = mypar, xTrans = log)
 ```
 
+\newpage
+
 ### PCR
 
 ```{r pcr_fit}
@@ -227,6 +241,8 @@ summary(pcr_fit)
 ```{r pcr_plot, fig.cap="Component Selection (PCR)"}
 ggplot(pcr_fit, highlight = TRUE)
 ```
+
+\newpage
 
 ### PLS
 
@@ -244,6 +260,7 @@ summary(pls_fit)
 ggplot(pls_fit, highlight = TRUE)
 ```
 
+\newpage
 
 ### GAM
 
@@ -262,6 +279,8 @@ plot(gam.fit$finalModel)
 
 par(mfrow = c(1, 1))
 ```
+
+\newpage
 
 ### MARS
 
@@ -282,7 +301,9 @@ mars.fit$bestTune
 coef(mars.fit$finalModel)
 ```
 
-### Regression Trees
+\newpage
+
+### Regression Tree
 
 ```{r regression tree, fig.cap="Tuning Parameter Selection (Regression Tree)", warning=FALSE}
 set.seed(37)
@@ -299,6 +320,7 @@ plot(tree.fit, xTrans = log)
 rpart.plot(tree.fit$finalModel)
 ```
 
+\newpage
 
 ### Comparison
 
@@ -312,6 +334,24 @@ resamp = resamples(list(elastic_net = enet_fit,
 summary(resamp)
 bwplot(resamp, metric = "RMSE")
 ```
+
+\newpage
+
+## Final Model
+
+\[
+\begin{aligned}
+log(antibody) = 10.8474 - 0.062\times h(27.8-bmi) - 0.0023\times h(time-57) \\
+- 0.0335\times h(57-time) - 0.2963\times I(gender=Male) \\
+- 0.023\times h(age-59) + 0.0161\times h(59-age) \\
+- 0.2051\times I(smoking=Current smoker) - 0.0844\times h(bmi-23.7)
+\end{aligned}
+\]
+
+\begin{center}
+Equation 1: Final Model
+\end{center}
+
 
 ## Model Performance
 
